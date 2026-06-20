@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORGEONE — CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --bg2: #0a0a0a;
+    --bg3: #141414;
+    --card: #0d0d0d;
+    --border: #1f1f1f;
+    --accent: #1d6ef5;
+    --accent2: #e8c840;
+    --text: #ffffff;
+    --text2: #a0a0a0;
+    --text3: #555555;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f97316;
+    --purple: #a855f7;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  /* LAYOUT */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 200px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; transition: transform .3s; }
+  .main { margin-left: 200px; flex: 1; min-height: 100vh; min-width: 0; overflow-x: hidden; }
+
+  /* SIDEBAR */
+  .logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; color: var(--text); }
+  .logo-sub { font-size: 10px; color: var(--accent); letter-spacing: 3px; margin-top: 2px; }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: var(--text2); font-size: 13px; font-weight: 500; transition: all .2s; margin-bottom: 4px; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(29,110,245,0.15); color: var(--accent); border: 1px solid rgba(29,110,245,0.3); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-section { font-size: 10px; letter-spacing: 2px; color: var(--text3); padding: 12px 12px 6px; }
+  .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); }
+
+  /* HEADER */
+  .header { padding: 20px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg); position: sticky; top: 0; z-index: 50; }
+  .header-title { font-size: 20px; font-weight: 700; }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* BUTTONS */
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1558d4; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-gold { background: var(--accent2); color: #0a0a0a; }
+  .btn-gold:hover { background: #d4b43a; }
+  .btn-danger { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn-icon { padding: 6px; border-radius: 6px; }
+
+  /* CONTENT */
+  .content { padding: 20px; max-width: 100%; }
+
+  /* CARDS */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .card-sm { padding: 16px; }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.gold::before { background: var(--accent2); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.purple::before { background: var(--purple); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--bg2); }
+  th { padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; border-bottom: 1px solid rgba(26,45,74,0.5); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* BADGES */
+  .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-dm { background: rgba(74,96,122,0.3); color: var(--text2); }
+  .badge-m1 { background: rgba(29,110,245,0.2); color: #60a0ff; }
+  .badge-encours { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .badge-quali { background: rgba(232,200,64,0.2); color: var(--accent2); }
+  .badge-video { background: rgba(249,115,22,0.2); color: #fb923c; }
+  .badge-rdvp { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .badge-rdvb { background: rgba(34,197,94,0.3); color: var(--green); }
+  .badge-dead { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  /* TOGGLE */
+  .toggle { width: 36px; height: 20px; background: var(--bg3); border-radius: 10px; position: relative; cursor: pointer; border: 1px solid var(--border); transition: background .2s; flex-shrink: 0; }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: transform .2s; }
+  .toggle.on::after { transform: translateX(16px); }
+
+  /* SEARCH */
+  .search-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .input { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; transition: border-color .2s; font-family: inherit; }
+  .input:focus { border-color: var(--accent); }
+  .input-sm { padding: 6px 10px; font-size: 12px; }
+  input[type="date"].input { color-scheme: dark; }
+
+  /* FILTER TABS */
+  .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .ftab { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text2); transition: all .2s; }
+  .ftab.active, .ftab:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* MODAL */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .overlay.show { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg2); z-index: 1; }
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .close-btn { background: none; border: none; color: var(--text2); cursor: pointer; padding: 4px; border-radius: 6px; }
+  .close-btn:hover { color: var(--text); background: var(--bg3); }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.span2 { grid-column: span 2; }
+  label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .input, select.input, textarea.input { width: 100%; }
+  textarea.input { resize: vertical; min-height: 80px; }
+  select.input option { background: var(--bg2); }
+
+  /* PIPELINE VIZ */
+  .pipeline { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+  .pipe-step { flex: 1; min-width: 100px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: all .2s; }
+  .pipe-step:hover { border-color: var(--accent); }
+  .pipe-step.active { border-color: var(--accent); background: rgba(29,110,245,0.1); }
+  .pipe-count { font-size: 22px; font-weight: 800; }
+  .pipe-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* SCORE */
+  .score-dots { display: flex; gap: 3px; }
+  .score-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); }
+  .score-dot.on { background: var(--accent2); }
+  .score-label { font-size: 11px; font-weight: 600; margin-left: 6px; }
+
+  /* INSTAGRAM LINK */
+  .ig-link { color: var(--accent); text-decoration: none; }
+  .ig-link:hover { text-decoration: underline; }
+
+  /* SCREENSHOT */
+  .screenshot-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+
+  /* CHART BARS */
+  .chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--accent); min-height: 2px; transition: height .3s; }
+  .bar-label { font-size: 9px; color: var(--text3); }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { color: var(--text2); font-size: 14px; }
+
+  /* IMPORT ZONE */
+  .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all .2s; }
+  .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: rgba(29,110,245,0.05); }
+  .drop-zone-text { color: var(--text2); font-size: 13px; margin-top: 8px; }
+
+  /* SECTION TITLE */
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  /* GRID LAYOUT */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* NOTIFICATION */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 13px; z-index: 1000; transform: translateY(80px); opacity: 0; transition: all .3s; display: flex; align-items: center; gap: 8px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+
+  /* MOBILE */
+  .hamburger { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 4px; }
+  .setter-grid { grid-template-columns: 1fr !important; }
+  @media (min-width: 900px) {
+    .setter-grid { grid-template-columns: 1fr 300px !important; }
+  }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .hamburger { display: block; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.span2 { grid-column: span 1; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid2 { grid-template-columns: 1fr; }
+    .content { padding: 16px; }
+    .header { padding: 14px 16px; }
+    .pipeline { gap: 6px; }
+    .pipe-step { min-width: 80px; padding: 10px 8px; }
+  }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+  .sidebar-overlay.show { display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-title">FORGE ONE</div>
+    <div class="logo-sub">CRM INSTAGRAM</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="navigate('setter')" id="nav-setter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Prospection DM
+    </div>
+    <div class="nav-item" onclick="navigate('pipeline')" id="nav-pipeline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
+      Pipeline
+    </div>
+    <div class="nav-item" onclick="navigate('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Stats & Dashboard
+    </div>
+    <div class="nav-item" onclick="navigate('sessions')" id="nav-sessions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Sessions Setter
+    </div>
+    <div class="nav-item" onclick="navigate('analyse')" id="nav-analyse">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Prospects Chauds
+    </div>
+    <div style="flex:1"></div>
+    <div class="nav-item" onclick="navigate('import')" id="nav-import">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import
+    </div>
+  </nav>
+  <div class="sidebar-footer">FORGE ONE © 2026</div>
+</div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" onclick="toggleSidebar()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="header-title" id="page-title">Prospection DM</div>
+    </div>
+    <div class="header-actions" id="header-actions"></div>
+  </div>
+  <div class="content" id="page-content"></div>
+</div>
+
+</div>
+
+<!-- MODAL PROSPECT -->
+<div class="overlay" id="modal-prospect">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Nouveau prospect</div>
+      <button class="close-btn" onclick="closeModal('modal-prospect')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Pseudo Instagram *</label>
+          <input class="input" id="f-instagram" placeholder="@username">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input class="input" type="date" id="f-date">
+        </div>
+        <div class="form-group">
+          <label>Secteur d'activité</label>
+          <select class="input" id="f-secteur" onchange="handleSecteur(this)">
+            <option value="">-- Sélectionner --</option>
+            <option>Coach fitness</option>
+            <option>Coach business</option>
+            <option>Coach bien-être / développement personnel</option>
+            <option>Agence marketing / communication</option>
+            <option>Agence immobilière</option>
+            <option>Agent immobilier indépendant</option>
+            <option>Architecte</option>
+            <option>Décoration intérieure</option>
+            <option>Menuisier / Artisan</option>
+            <option>Photographe</option>
+            <option>Vidéaste / Créateur de contenu</option>
+            <option>E-commerce</option>
+            <option>Dropshipping</option>
+            <option>Consultant / Freelance</option>
+            <option>Avocat / Juriste</option>
+            <option>Comptable / Expert-comptable</option>
+            <option>Médecin / Santé</option>
+            <option>Restaurant / Food</option>
+            <option>Infoproduit / Formation en ligne</option>
+            <option>Personal branding</option>
+            <option>Autre</option>
+          </select>
+          <input class="input" id="f-secteur-autre" placeholder="Précise le secteur..." style="display:none;margin-top:8px">
+        </div>
+        <div class="form-group">
+          <label>Score de qualification</label>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:4px" id="score-picker">
+            <div class="score-pick" data-val="1" onclick="setScore(1)" title="Froid" style="cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;background:var(--bg3);color:#7a90b0;transition:all .2s">1<br><span style="font-size:10px;font-weight:500">Froid</span></div>
+            <div class="score-pick" data-val="2" onclick="setScore(2)" title="Tiède" style="cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;background:var(--bg3);color:#7a90b0;transition:all .2s">2<br><span style="font-size:10px;font-weight:500">Tiède</span></div>
+            <div class="score-pick" data-val="3" onclick="setScore(3)" title="Potentiel" style="cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;background:var(--bg3);color:#7a90b0;transition:all .2s">3<br><span style="font-size:10px;font-weight:500">Potentiel</span></div>
+            <div class="score-pick" data-val="4" onclick="setScore(4)" title="Chaud" style="cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;background:var(--bg3);color:#7a90b0;transition:all .2s">4<br><span style="font-size:10px;font-weight:500">Chaud</span></div>
+            <div class="score-pick" data-val="5" onclick="setScore(5)" title="Top" style="cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;background:var(--bg3);color:#7a90b0;transition:all .2s">5<br><span style="font-size:10px;font-weight:500">Top</span></div>
+          </div>
+          <input type="hidden" id="f-score" value="0">
+        </div>
+        <div class="form-group">
+          <label>Lien profil IG</label>
+          <input class="input" id="f-lien" placeholder="https://instagram.com/...">
+        </div>
+        <div class="form-group">
+          <label>Site web</label>
+          <input class="input" id="f-site" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Statut</label>
+          <select class="input" id="f-statut">
+            <option value="A DM">À DM</option>
+            <option value="M1 Envoyé">M1 Envoyé</option>
+            <option value="En cours">En cours</option>
+            <option value="Qualifié">Qualifié</option>
+            <option value="A vu la vidéo">A vu la vidéo</option>
+            <option value="RDV Proposé">RDV Proposé</option>
+            <option value="RDV Booké">RDV Booké</option>
+            <option value="Dead">Dead</option>
+          </select>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;padding-top:20px">
+          <div style="display:flex;gap:20px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:var(--text2)">M1 Envoyé</span>
+              <div class="toggle" id="f-m1" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:var(--text2)">Qualifié</span>
+              <div class="toggle" id="f-quali" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group span2">
+          <label>Notes</label>
+          <textarea class="input" id="f-notes" placeholder="Notes sur ce prospect..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-prospect')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProspect()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SESSION -->
+<div class="overlay" id="modal-session">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Session du jour</div>
+      <button class="close-btn" onclick="closeModal('modal-session')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group span2">
+          <label>Date</label>
+          <input class="input" type="date" id="s-date">
+        </div>
+        <div class="form-group">
+          <label>Nouvelles conversations</label>
+          <input class="input" type="number" id="s-newconv" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>RDV Proposés</label>
+          <input class="input" type="number" id="s-rdvp" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>RDV Bookés</label>
+          <input class="input" type="number" id="s-rdvb" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Relances</label>
+          <input class="input" type="number" id="s-relances" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Temps (heures)</label>
+          <input class="input" type="number" id="s-temps" min="0" step="0.5" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Retours reçus</label>
+          <input class="input" type="number" id="s-retour" min="0" placeholder="0">
+        </div>
+        <div class="form-group span2">
+          <label>Notes</label>
+          <textarea class="input" id="s-notes" placeholder="Notes de la session..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-session')">Annuler</button>
+      <button class="btn btn-gold" onclick="saveSession()">Enregistrer la session</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SCREENSHOT -->
+<div class="overlay" id="modal-screenshot">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">Screenshot conversation</div>
+      <button class="close-btn" onclick="closeModal('modal-screenshot')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <img id="screenshot-full" src="" style="width:100%;border-radius:8px;display:none">
+      <div id="upload-zone" class="drop-zone">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto;opacity:0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <div class="drop-zone-text">Clique ou glisse un screenshot ici</div>
+        <input type="file" id="file-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-screenshot')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let currentPage = 'setter';
+let editingId = null;
+let screenshotProspectId = null;
+
+// ---- NAVIGATION ----
+// ---- DONUT CHART ----
+function drawDonut(svgId, segments, cx, cy, R, r) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const total = segments.reduce((s, x) => s + x.v, 0);
+  if (!total) return;
+  let angle = 0;
+  segments.forEach(seg => {
+    const slice = (seg.v / total) * 360;
+    if (slice < 0.5) { angle += slice; return; }
+    const gap = segments.length > 1 ? 2 : 0;
+    const s = angle + gap / 2, e = angle + slice - gap / 2;
+    function pt(a) {
+      const rad = (a - 90) * Math.PI / 180;
+      return [cx + Math.cos(rad), cy + Math.sin(rad)];
+    }
+    const [ox1, oy1] = pt(s); const [ox2, oy2] = pt(e);
+    const [ix1, iy1] = pt(e); const [ix2, iy2] = pt(s);
+    const lg = slice > 180 ? 1 : 0;
+    const d = `M${ox1*R+cx-(cx)},${oy1*R+(cy-(cy))} `.replace('NaN','') +
+      `M ${ox1*R},${oy1*R} A ${R} ${R} 0 ${lg} 1 ${ox2*R} ${oy2*R} L ${ix1*r} ${iy1*r} A ${r} ${r} 0 ${lg} 0 ${ix2*r} ${iy2*r} Z`;
+    // Simpler approach with transform
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const rad1 = (s - 90) * Math.PI / 180, rad2 = (e - 90) * Math.PI / 180;
+    const x1 = cx + R * Math.cos(rad1), y1 = cy + R * Math.sin(rad1);
+    const x2 = cx + R * Math.cos(rad2), y2 = cy + R * Math.sin(rad2);
+    const x3 = cx + r * Math.cos(rad2), y3 = cy + r * Math.sin(rad2);
+    const x4 = cx + r * Math.cos(rad1), y4 = cy + r * Math.sin(rad1);
+    path.setAttribute('d', `M${x1},${y1} A${R},${R},0,${lg},1,${x2},${y2} L${x3},${y3} A${r},${r},0,${lg},0,${x4},${y4} Z`);
+    path.setAttribute('fill', seg.color);
+    svg.appendChild(path);
+    angle += slice;
+  });
+}
+
+// ---- PIPELINE + DASHBOARD ----
+const KANBAN_COLS = [
+  { key: 'A DM',          label: 'À DM',        color: '#60a5fa' },
+  { key: 'M1 Envoyé',     label: 'M1 Envoyé',   color: '#818cf8' },
+  { key: 'En cours',      label: 'En cours',     color: '#a855f7' },
+  { key: 'Qualifié',      label: 'Qualifié',     color: '#eab308' },
+  { key: 'A vu la vidéo', label: 'Vidéo',        color: '#f97316' },
+  { key: 'RDV Proposé',   label: 'RDV Proposé', color: '#4ade80' },
+  { key: 'RDV Booké',     label: 'RDV Booké',   color: '#22c55e' },
+  { key: 'Dead',          label: 'Dead',         color: '#ef4444' },
+];
+
+function kbInitials(ig) { return (ig||'?').slice(0,2).toUpperCase(); }
+function kbAvatarColor(ig) {
+  const c=['#3b5bdb','#7950f2','#1098ad','#2f9e44','#e67700','#c92a2a'];
+  let h=0; for(let ch of (ig||'')) h=(h*31+ch.charCodeAt(0))%c.length;
+  return c[Math.abs(h)];
+}
+
+let _dragId = null;
+
+async function renderPipeline() {
+  document.getElementById('page-title').textContent = 'Pipeline';
+  document.getElementById('header-actions').innerHTML = '';
+
+  const prospects = await api('/api/prospects');
+  _renderKanban(prospects);
+}
+
+function _renderKanban(prospects) {
+  const SC = ['','#7a90b0','#f97316','#e8c840','#22c55e','#1d6ef5'];
+  const SL = ['','Froid','Tiède','Potentiel','Chaud','Top'];
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:20px;min-height:calc(100vh - 120px)">
+      ${KANBAN_COLS.map(col => {
+        const items = prospects.filter(pr => pr.statut === col.key);
+        return `
+        <div class="kb-col" data-statut="${col.key}"
+          style="min-width:185px;flex:1;display:flex;flex-direction:column"
+          ondragover="event.preventDefault();this.querySelector('.kb-drop-zone').style.background='rgba(255,255,255,0.06)'"
+          ondragleave="this.querySelector('.kb-drop-zone').style.background='transparent'"
+          ondrop="kbDrop(event,'${col.key.replace(/'/g,"\\'")}',this)">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid ${col.color};flex-shrink:0">
+            <span style="font-size:12px;font-weight:700">${col.label}</span>
+            <span style="background:${col.color}22;color:${col.color};font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px" id="kb-count-${col.key.replace(/ /g,'-')}">${items.length}</span>
+          </div>
+          <div class="kb-drop-zone" style="flex:1;border-radius:8px;transition:background .15s;padding:2px;min-height:80px">
+            ${items.map(pr=>`
+              <div class="kb-card" draggable="true" data-id="${pr.id}"
+                ondragstart="kbDragStart(event,${pr.id})"
+                ondragend="kbDragEnd(event)"
+                onclick="openFiche(${pr.id})"
+                style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;cursor:grab;margin-bottom:7px;transition:border-color .15s,opacity .15s;user-select:none"
+                onmouseover="this.style.borderColor='${col.color}'"
+                onmouseout="this.style.borderColor='var(--border)'">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:${kbAvatarColor(pr.instagram)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${kbInitials(pr.instagram)}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@${pr.instagram}</div>
+                    ${pr.secteur?`<div style="font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pr.secteur}</div>`:''}
+                  </div>
+                </div>
+                ${pr.score>0?`<span style="font-size:9px;font-weight:700;color:${SC[pr.score]};background:${SC[pr.score]}22;padding:1px 6px;border-radius:20px">${SL[pr.score]}</span>`:''}
+                ${pr.notes?`<div style="font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px">${pr.notes}</div>`:''}
+                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">
+                  ${pr.m1?`<span style="font-size:9px;background:rgba(29,110,245,0.15);color:#60a0ff;padding:1px 5px;border-radius:4px">M1✓</span>`:''}
+                  ${pr.rdv_propose?`<span style="font-size:9px;background:rgba(74,222,128,0.15);color:#4ade80;padding:1px 5px;border-radius:4px">RDV prop.</span>`:''}
+                  ${(pr.relance_count||0)>0?`<span style="font-size:9px;background:rgba(249,115,22,0.15);color:#fb923c;padding:1px 5px;border-radius:4px">↻${pr.relance_count}</span>`:''}
+                </div>
+              </div>`).join('')}
+            ${!items.length?`<div style="text-align:center;padding:20px 8px;color:var(--text3);font-size:11px;border:1.5px dashed var(--border);border-radius:8px">Déposer ici</div>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function kbDragStart(e, id) {
+  _dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => { const el = e.target; if(el) el.style.opacity = '0.4'; }, 0);
+}
+
+function kbDragEnd(e) {
+  e.target.style.opacity = '1';
+  document.querySelectorAll('.kb-drop-zone').forEach(z => z.style.background = 'transparent');
+}
+
+async function kbDrop(e, newStatut, colEl) {
+  e.preventDefault();
+  colEl.querySelector('.kb-drop-zone').style.background = 'transparent';
+  if (!_dragId) return;
+  const id = _dragId;
+  _dragId = null;
+
+  // Move card in DOM immediately
+  const card = document.querySelector(`.kb-card[data-id="${id}"]`);
+  const zone = colEl.querySelector('.kb-drop-zone');
+  if (card && zone) {
+    const empty = zone.querySelector('div[style*="Déposer ici"]');
+    if (empty) empty.remove();
+    zone.prepend(card);
+    // Update border color on hover for new column
+    const col = KANBAN_COLS.find(c => c.key === newStatut);
+    if (col) {
+      card.onmouseover = () => card.style.borderColor = col.color;
+      card.ondrop = undefined;
+    }
+  }
+
+  // Update counts
+  document.querySelectorAll('.kb-col').forEach(col => {
+    const badge = col.querySelector('[id^="kb-count-"]');
+    if (badge) badge.textContent = col.querySelectorAll('.kb-card').length;
+  });
+
+  // Persist to server
+  await api(`/api/prospects/${id}`, 'PUT', { statut: newStatut });
+}
+
+async function renderDashboard() {
+  document.getElementById('page-title').textContent = 'Stats & Dashboard';
+  document.getElementById('header-actions').innerHTML = '';
+
+  const [prospects, stats] = await Promise.all([api('/api/prospects'), api('/api/stats')]);
+
+  const COLS = KANBAN_COLS;
+  const SC = ['','#7a90b0','#f97316','#e8c840','#22c55e','#1d6ef5'];
+
+  const p = stats.prospects || {};
+  const s = stats.sessions || {};
+  const total = p.total_prospects || 0;
+  const tauxRep = p.total_m1 > 0 ? Math.round(((p.total_en_cours||0)/p.total_m1)*100) : 0;
+  const tauxRdv = (p.total_en_cours||0) > 0 ? Math.round(((p.total_rdv_booke||0)/p.total_en_cours)*100) : 0;
+  const tauxQ   = total > 0 ? Math.round(((p.total_quali||0)/total)*100) : 0;
+
+  const pipeSegs = COLS.filter(c => c.key !== 'Dead').map(c => ({
+    v: prospects.filter(pr => pr.statut === c.key).length,
+    color: c.color, label: c.label
+  }));
+  const ptotal = pipeSegs.reduce((a,x)=>a+x.v,0)||1;
+
+  const sectMap = {};
+  prospects.forEach(pr => { if(pr.secteur) sectMap[pr.secteur] = (sectMap[pr.secteur]||0)+1; });
+  const sectColors = ['#3b82f6','#8b5cf6','#f97316','#eab308','#22c55e','#64748b'];
+  const sectSegs = Object.entries(sectMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v],i)=>({v,color:sectColors[i],label:k}));
+  const restSect = prospects.length - sectSegs.reduce((a,x)=>a+x.v,0);
+  if(restSect>0) sectSegs.push({v:restSect,color:'#334155',label:'Autres'});
+  const stotal = sectSegs.reduce((a,x)=>a+x.v,0)||1;
+
+  const recent = (stats.recent||[]).slice().reverse();
+  const maxV = Math.max(...recent.map(r=>r.new_conv||0),1);
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+      <div class="stat-card blue" style="margin:0"><div class="stat-num">${total}</div><div class="stat-label">Prospects</div></div>
+      <div class="stat-card blue" style="margin:0"><div class="stat-num">${s.new_conv||0}</div><div class="stat-label">Convs totales</div></div>
+      <div class="stat-card" style="margin:0;position:relative;overflow:hidden"><div class="stat-num" style="color:#a855f7">${p.total_en_cours||0}</div><div class="stat-label">En cours</div><div style="position:absolute;top:0;left:0;right:0;height:2px;background:#a855f7"></div></div>
+      <div class="stat-card gold" style="margin:0"><div class="stat-num">${p.total_quali||0}</div><div class="stat-label">Qualifiés</div></div>
+      <div class="stat-card orange" style="margin:0"><div class="stat-num" style="color:#f97316">${p.total_video||0}</div><div class="stat-label">Ont vu vidéo</div></div>
+      <div class="stat-card green" style="margin:0"><div class="stat-num">${p.total_rdv_propose||0}</div><div class="stat-label">RDV Proposés</div></div>
+      <div class="stat-card green" style="margin:0"><div class="stat-num">${p.total_rdv_booke||0}</div><div class="stat-label">RDV Bookés</div></div>
+      <div class="stat-card red" style="margin:0"><div class="stat-num">${p.total_dead||0}</div><div class="stat-label">Dead</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:12px">
+      ${[
+        {id:'d1',label:'Taux réponse',val:tauxRep,color:'#eab308',sub:'M1 → Réponse'},
+        {id:'d2',label:'Conv → RDV',val:tauxRdv,color:'#22c55e',sub:'Bookés'},
+        {id:'d3',label:'Taux qualif.',val:tauxQ,color:'#f97316',sub:'Qualifiés'}
+      ].map(d=>`
+        <div class="card" style="padding:14px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${d.label}</div>
+          <svg id="${d.id}" width="80" height="80" viewBox="0 0 80 80" style="display:block;margin:0 auto"></svg>
+          <div style="font-size:18px;font-weight:800;color:${d.color};margin-top:4px">${d.val}%</div>
+          <div style="font-size:10px;color:var(--text3)">${d.sub}</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:12px">
+      <div class="card" style="padding:14px">
+        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Répartition pipeline</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <svg id="d4" width="80" height="80" viewBox="0 0 80 80" style="flex-shrink:0"></svg>
+          <div style="flex:1;min-width:0">
+            ${pipeSegs.filter(x=>x.v>0).map(x=>`
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+                <div style="width:7px;height:7px;border-radius:50%;background:${x.color};flex-shrink:0"></div>
+                <div style="font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.label}</div>
+                <div style="font-size:10px;font-weight:700">${Math.round((x.v/ptotal)*100)}%</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px">
+        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Secteurs</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <svg id="d5" width="80" height="80" viewBox="0 0 80 80" style="flex-shrink:0"></svg>
+          <div style="flex:1;min-width:0">
+            ${sectSegs.filter(x=>x.v>0).map(x=>`
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+                <div style="width:7px;height:7px;border-radius:50%;background:${x.color};flex-shrink:0"></div>
+                <div style="font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.label}</div>
+                <div style="font-size:10px;font-weight:700">${Math.round((x.v/stotal)*100)}%</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:14px">
+      <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Nouveaux prospects — 14 derniers jours</div>
+      <div style="display:flex;align-items:flex-end;gap:4px;height:60px">
+        ${recent.length ? recent.slice().reverse().map(r=>{
+          const v = r.new_conv||0;
+          const h = maxV > 0 ? Math.max(Math.round((v/maxV)*52), v>0?4:2) : 2;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+            ${v>0?`<div style="font-size:8px;color:var(--text3)">${v}</div>`:''}
+            <div style="width:100%;background:${v>0?'var(--accent)':'var(--bg3)'};border-radius:2px 2px 0 0;height:${h}px;margin-top:auto"></div>
+            <div style="font-size:8px;color:var(--text3);white-space:nowrap">${(r.date||'').slice(5)}</div>
+          </div>`;
+        }).join('') : `<div style="color:var(--text3);font-size:12px;margin:auto;align-self:center">Aucune donnée encore</div>`}
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    function mini(id, pct, color) {
+      const svg = document.getElementById(id);
+      if(!svg) return;
+      drawDonut(id,[{v:100-pct,color:'#1a2d4a'},{v:pct||0.1,color}],40,40,34,22);
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',40); t.setAttribute('y',45);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('fill','#e8edf5');
+      t.setAttribute('font-size','13');
+      t.setAttribute('font-weight','700');
+      t.setAttribute('font-family','Inter,sans-serif');
+      t.textContent = pct+'%';
+      svg.appendChild(t);
+    }
+    mini('d1', tauxRep, '#eab308');
+    mini('d2', tauxRdv, '#22c55e');
+    mini('d3', tauxQ,   '#f97316');
+    drawDonut('d4', pipeSegs.filter(x=>x.v>0), 40, 40, 34, 20);
+    drawDonut('d5', sectSegs.filter(x=>x.v>0), 40, 40, 34, 20);
+  }, 50);
+}
+
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-' + page)?.classList.add('active');
+  closeSidebar();
+  window.location.hash = page;
+  document.getElementById('page-content').innerHTML = '<div style="padding:60px;text-align:center;color:var(--text3);font-size:13px">Chargement...</div>';
+  document.getElementById('header-actions').innerHTML = '';
+  if (page === 'pipeline') renderPipeline();
+  else if (page === 'dashboard') renderDashboard();
+  else if (page === 'setter') renderSetter();
+  else if (page === 'analyse') renderAnalyse();
+  else if (page === 'sessions') renderSessions();
+  else if (page === 'import') renderImport();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ---- API ----
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  return res.json();
+}
+
+// ---- TOAST ----
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ---- MODAL ----
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ---- BADGE ----
+function badge(statut) {
+  const map = {
+    'A DM': 'badge-dm', 'M1 Envoyé': 'badge-m1', 'En cours': 'badge-encours',
+    'Qualifié': 'badge-quali', 'A vu la vidéo': 'badge-video',
+    'RDV Proposé': 'badge-rdvp', 'RDV Booké': 'badge-rdvb', 'Dead': 'badge-dead'
+  };
+  return `<span class="badge ${map[statut]||'badge-dm'}">${statut}</span>`;
+}
+
+const SCORE_LABELS = ['', 'Froid', 'Tiède', 'Potentiel', 'Chaud', 'Top'];
+const SCORE_COLORS = ['', '#7a90b0', '#f97316', '#e8c840', '#22c55e', '#1d6ef5'];
+
+function scoreDots(n) {
+  const label = n > 0 ? SCORE_LABELS[n] : '—';
+  const color = n > 0 ? SCORE_COLORS[n] : 'var(--text3)';
+  const dots = [1,2,3,4,5].map(i=>`<div class="score-dot${i<=n?' on':''}"></div>`).join('');
+  return `<div style="display:flex;flex-direction:column;gap:3px">
+    <div class="score-dots">${dots}</div>
+    <span style="font-size:11px;font-weight:700;color:${color}">${label}</span>
+  </div>`;
+}
+
+function igLink(handle) {
+  const clean = handle.replace('@','');
+  return `<a class="ig-link" href="https://instagram.com/${clean}" target="_blank">@${clean}</a>`;
+}
+
+// ---- SETTER PAGE ----
+// ---- FICHE PROSPECT ----
+async function openFiche(id) {
+  const p = await api(`/api/prospects/${id}`);
+  const SC = ['','#7a90b0','#f97316','#e8c840','#22c55e','#1d6ef5'];
+  const SL = ['','Froid','Tiède','Potentiel','Chaud','Top'];
+  const ACTION_LABELS = {
+    'prospect_ajouté':'Prospect ajouté','m1_envoyé':'M1 envoyé','statut_changé':'Statut changé',
+    'qualifié':'Qualifié','rdv_proposé':'RDV proposé','rdv_booké':'RDV booké',
+    'dead':'Dead','réactivé':'Réactivé','a_vu_vidéo':'A vu la vidéo',
+    'relance_envoyée':'Relance envoyée','déqualifié':'Déqualifié'
+  };
+  function avatarColor(ig) {
+    const c=['#3b5bdb','#7950f2','#1098ad','#2f9e44','#e67700','#c92a2a'];
+    let h=0; for(let ch of (ig||'')) h=(h*31+ch.charCodeAt(0))%c.length;
+    return c[Math.abs(h)];
+  }
+
+  document.getElementById('fiche-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="width:44px;height:44px;border-radius:50%;background:${avatarColor(p.instagram)};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${(p.instagram||'?').slice(0,2).toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <a href="https://instagram.com/${p.instagram}" target="_blank" style="font-size:15px;font-weight:700;color:var(--accent);text-decoration:none">@${p.instagram}</a>
+          ${p.tag?`<span style="font-size:10px;background:rgba(168,85,247,0.2);color:#c084fc;padding:2px 7px;border-radius:4px">${p.tag}</span>`:''}
+          ${p.relance_count>0?`<span style="font-size:10px;background:rgba(249,115,22,0.2);color:#fb923c;padding:2px 7px;border-radius:4px">À relancer</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${p.statut||''}${p.secteur?' · '+p.secteur:''}</div>
+      </div>
+      ${p.lien_profil?`<a href="${p.lien_profil}" target="_blank" class="btn btn-secondary btn-sm">Ouvrir IG</a>`:''}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div><div style="font-size:10px;color:var(--text3)">Source</div><div style="font-size:13px;font-weight:600">${p.source||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--text3)">1er contact</div><div style="font-size:13px;font-weight:600">${p.premier_contact||p.date||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--text3)">Prochaine action</div><div style="font-size:13px;font-weight:600;color:var(--accent2)">${p.prochain_pas?p.prochain_pas.slice(0,20):'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--text3)">Valeur estimée</div><div style="font-size:13px;font-weight:600;color:var(--green)">${p.valeur_estimee||'—'}</div></div>
+    </div>
+
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;background:var(--bg)">
+      <div style="font-size:12px;font-weight:700;margin-bottom:10px">Résumé de la conversation</div>
+      ${['situation','obstacles','prochain_pas'].map(k=>`
+        <div style="margin-bottom:8px">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">${k==='prochain_pas'?'Prochain pas':k.charAt(0).toUpperCase()+k.slice(1)}</div>
+          <textarea class="input" rows="2" style="font-size:12px" oninput="quickSave(${p.id},'${k}',this.value)" placeholder="Renseigne ici...">${p[k]||''}</textarea>
+        </div>`).join('')}
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">Historique</div>
+      ${(p.historique||[]).length ? p.historique.map(h=>`
+        <div style="display:flex;gap:10px;margin-bottom:6px;font-size:12px">
+          <div style="color:var(--text3);white-space:nowrap;flex-shrink:0">${(h.ts||'').slice(0,10)}</div>
+          <div style="color:var(--text2)">${ACTION_LABELS[h.action]||h.action}${h.old_value&&h.new_value?' · '+h.old_value+' → '+h.new_value:''}</div>
+        </div>`).join('') : `<div style="color:var(--text3);font-size:12px">Aucune activité enregistrée</div>`}
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'relance_count',${(p.relance_count||0)+1});openFiche(${p.id})">🔁 Relance +1</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'rdv_booke',1);quickSave(${p.id},'statut','RDV Booké');openFiche(${p.id})">📅 Booker RDV</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'statut','Qualifié');openFiche(${p.id})">⭐ Passer au closer</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'dead',1);openFiche(${p.id})">💀 Dead</button>
+      <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="editProspect(${p.id});closePanel()">✏️ Modifier</button>
+    </div>`;
+
+  document.getElementById('fiche-panel').style.display = 'flex';
+}
+
+async function quickSave(id, field, value) {
+  await api(`/api/prospects/${id}`, { method:'PUT', body: JSON.stringify({[field]: value}) });
+}
+
+async function addRelance(id) {
+  const p = await api(`/api/prospects/${id}`);
+  if (!p || p.error) return;
+  const newCount = (p.relance_count || 0) + 1;
+  await api(`/api/prospects/${id}`, { method:'PUT', body: JSON.stringify({ relance_count: newCount }) });
+  showToast(`↻ Relance ${newCount} enregistrée`);
+  filterProspects();
+}
+
+function closePanel() {
+  document.getElementById('fiche-panel').style.display = 'none';
+}
+
+async function renderSetter() {
+  document.getElementById('page-title').textContent = 'Prospection DM';
+  document.getElementById('header-actions').innerHTML = '';
+
+  const prospects = await api('/api/prospects');
+  const statuts = ['A DM','M1 Envoyé','En cours','Qualifié','A vu la vidéo','RDV Proposé','RDV Booké','Dead'];
+  const counts = {};
+  statuts.forEach(s => counts[s] = prospects.filter(p => p.statut === s).length);
+  currentStatutFilter = 'ALL';
+
+  const aRelancer = prospects.filter(p => (p.relance_count||0) > 0 && p.statut !== 'Dead' && p.statut !== 'RDV Booké');
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <input class="input" id="search-input" placeholder="Rechercher un prospect..." oninput="filterProspects()" style="flex:1;min-width:180px">
+      <button class="btn btn-primary" onclick="openProspectModal()" style="white-space:nowrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouveau prospect
+      </button>
+    </div>
+    <div class="filter-tabs" id="statut-tabs">
+      <div class="ftab active" onclick="setStatutFilter('ALL', this)">Tout (${prospects.length})</div>
+      ${statuts.map(s=>`<div class="ftab" onclick="setStatutFilter('${s}', this)">${s} (${counts[s]})</div>`).join('')}
+    </div>
+    <div class="setter-grid">
+      <div id="prospects-table" style="min-width:0"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:80px;min-width:0">
+
+        <div class="card" style="padding:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">À relancer · ${aRelancer.length}</div>
+          ${aRelancer.length ? aRelancer.map(p=>`
+            <div onclick="openFiche(${p.id})" style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer;margin-bottom:4px" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+              <div style="width:30px;height:30px;border-radius:50%;background:#e67700;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${(p.instagram||'?').slice(0,2).toUpperCase()}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@${p.instagram}</div>
+                <div style="font-size:10px;color:var(--text2)">${p.statut} · ${p.relance_count} relance${p.relance_count>1?'s':''}</div>
+              </div>
+              <span style="font-size:9px;background:rgba(249,115,22,0.2);color:#fb923c;padding:2px 6px;border-radius:4px;flex-shrink:0">↻</span>
+            </div>`).join('') : `<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Aucun à relancer</div>`}
+        </div>
+
+        <div id="fiche-panel" style="display:none;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;max-height:65vh;overflow-y:auto">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Fiche prospect</div>
+            <button onclick="closePanel()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;line-height:1;padding:0 4px">×</button>
+          </div>
+          <div id="fiche-content"></div>
+        </div>
+
+      </div>
+    </div>`;
+
+  renderProspectsTable(prospects);
+}
+
+let currentStatutFilter = 'ALL';
+
+function setStatutFilter(statut, el) {
+  currentStatutFilter = statut;
+  document.querySelectorAll('#statut-tabs .ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  filterProspects();
+}
+
+async function filterProspects() {
+  const search = document.getElementById('search-input')?.value || '';
+  const prospects = await api(`/api/prospects?statut=${currentStatutFilter}&search=${encodeURIComponent(search)}`);
+  renderProspectsTable(prospects);
+}
+
+function renderProspectsTable(prospects) {
+  const el = document.getElementById('prospects-table');
+  if (!el) return;
+  if (!prospects.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Aucun prospect trouvé</div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Instagram</th><th>Statut</th><th>Secteur</th><th>Score</th>
+          <th>M1</th><th>Qualifié</th><th>Date</th><th>Notes</th><th>Relance</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${prospects.map(p => `
+            <tr onclick="openFiche(${p.id})" style="cursor:pointer">
+              <td>${igLink(p.instagram)}</td>
+              <td>${badge(p.statut)}</td>
+              <td style="color:var(--text2);font-size:12px">${p.secteur||'—'}</td>
+              <td>${scoreDots(p.score||0)}</td>
+              <td><div class="toggle ${p.m1?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'m1',${p.m1?0:1})"></div></td>
+              <td><div class="toggle ${p.quali?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'quali',${p.quali?0:1})"></div></td>
+              <td style="color:var(--text2);font-size:12px">${p.date||''}</td>
+              <td style="max-width:160px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.notes||'—'}</td>
+              <td onclick="event.stopPropagation()">
+                <button onclick="addRelance(${p.id})" style="background:${(p.relance_count||0)>0?'rgba(249,115,22,0.15)':'var(--bg3)'};color:${(p.relance_count||0)>0?'#fb923c':'var(--text2)'};border:1px solid ${(p.relance_count||0)>0?'rgba(249,115,22,0.3)':'var(--border)'};border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:600">
+                  ↻${(p.relance_count||0)>0?' '+p.relance_count:''}
+                </button>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-secondary btn-sm btn-icon" onclick="editProspect(${p.id})" title="Modifier">✏️</button>
+                  <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProspect(${p.id})" title="Supprimer">🗑</button>
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ---- ANALYSE PAGE ----
+async function renderAnalyse() {
+  document.getElementById('page-title').textContent = 'Prospects Chauds';
+  document.getElementById('header-actions').innerHTML = '';
+
+  const prospects = await api('/api/prospects?statut=ALL');
+  const chauds = prospects.filter(p => !['A DM','M1 Envoyé','Dead'].includes(p.statut));
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Instagram</th><th>Statut</th><th>Secteur</th><th>Score</th>
+          <th>A vu vidéo</th><th>RDV Proposé</th><th>RDV Booké</th><th>Relances</th><th>Dead</th><th>Notes</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${chauds.length ? chauds.map(p => `
+            <tr>
+              <td>${igLink(p.instagram)}</td>
+              <td>${badge(p.statut)}</td>
+              <td style="color:var(--text2);font-size:12px">${p.secteur||'—'}</td>
+              <td>${scoreDots(p.score||0)}</td>
+              <td><div class="toggle ${p.a_vu_video?'on':''}" onclick="quickToggle(${p.id},'a_vu_video',${p.a_vu_video?0:1})"></div></td>
+              <td><div class="toggle ${p.rdv_propose?'on':''}" onclick="quickToggle(${p.id},'rdv_propose',${p.rdv_propose?0:1})"></div></td>
+              <td><div class="toggle ${p.rdv_booke?'on':''}" onclick="quickToggle(${p.id},'rdv_booke',${p.rdv_booke?0:1})"></div></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <button class="btn btn-secondary btn-sm btn-icon" onclick="quickToggle(${p.id},'relance_count',${(p.relance_count||0)-1},true)">−</button>
+                  <span style="font-weight:600;min-width:16px;text-align:center">${p.relance_count||0}</span>
+                  <button class="btn btn-secondary btn-sm btn-icon" onclick="quickToggle(${p.id},'relance_count',${(p.relance_count||0)+1},true)">+</button>
+                </div>
+              </td>
+              <td><div class="toggle ${p.dead?'on':''}" onclick="quickToggle(${p.id},'dead',${p.dead?0:1})"></div></td>
+              <td style="max-width:200px;font-size:12px;color:var(--text2)">${p.notes||'—'}</td>
+              <td><button class="btn btn-secondary btn-sm btn-icon" onclick="editProspect(${p.id})">✏️</button></td>
+            </tr>`).join('') : `<tr><td colspan="11"><div class="empty"><div class="empty-icon">🔥</div><div class="empty-text">Aucun prospect chaud pour l'instant</div></div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ---- SESSIONS PAGE ----
+async function renderSessions(period = 'day') {
+  document.getElementById('page-title').textContent = 'Sessions Setter';
+  document.getElementById('header-actions').innerHTML = `
+    <button class="btn btn-secondary btn-sm" onclick="openSessionModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Saisir temps
+    </button>`;
+
+  const sessions = await api(`/api/sessions/auto?period=${period}`);
+  const activity = await api(`/api/activity?period=${period}&limit=50`);
+
+  const ACTION_LABELS = {
+    'prospect_ajouté': '➕ Nouveau prospect',
+    'm1_envoyé': '📨 M1 envoyé',
+    'm1_annulé': '↩️ M1 annulé',
+    'statut_changé': '🔄 Statut changé',
+    'qualifié': '⭐ Qualifié',
+    'déqualifié': '↩️ Déqualifié',
+    'rdv_proposé': '📅 RDV proposé',
+    'rdv_booké': '✅ RDV booké',
+    'rdv_booké_annulé': '❌ RDV annulé',
+    'dead': '💀 Dead',
+    'réactivé': '♻️ Réactivé',
+    'a_vu_vidéo': '🎬 A vu la vidéo',
+    'relance_envoyée': '🔁 Relance envoyée',
+  };
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="filter-tabs" style="margin-bottom:20px">
+      <div class="ftab ${period==='day'?'active':''}" onclick="renderSessions('day')">Par jour</div>
+      <div class="ftab ${period==='week'?'active':''}" onclick="renderSessions('week')">Par semaine</div>
+      <div class="ftab ${period==='month'?'active':''}" onclick="renderSessions('month')">Par mois</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="section-title">Stats automatiques</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Période</th><th>Nouveaux</th><th>M1</th><th>Réponses</th><th>Qualifiés</th><th>RDV Prop.</th><th>RDV Bookés</th><th>Relances</th><th>Dead</th><th>Temps</th>
+            </tr></thead>
+            <tbody>
+              ${sessions.length ? sessions.map(s => `
+                <tr>
+                  <td style="font-weight:600;white-space:nowrap">${s.periode||'—'}</td>
+                  <td><span style="color:var(--accent);font-weight:700">${s.nouveaux_prospects||0}</span></td>
+                  <td>${s.m1_envoyes||0}</td>
+                  <td style="color:#c084fc">${s.reponses||0}</td>
+                  <td style="color:var(--accent2)">${s.qualifies||0}</td>
+                  <td style="color:#4ade80">${s.rdv_proposes||0}</td>
+                  <td><span style="color:var(--green);font-weight:600">${s.rdv_bookes||0}</span></td>
+                  <td>${s.relances||0}</td>
+                  <td style="color:var(--red)">${s.dead||0}</td>
+                  <td style="color:var(--text2)">${s.temps_heures||0}h</td>
+                </tr>`).join('') : `<tr><td colspan="10"><div class="empty" style="padding:30px"><div class="empty-text">Aucune activité sur cette période</div></div></td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Journal d'activité</div>
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:500px;overflow-y:auto">
+          ${activity.length ? activity.map(a => `
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:600">${ACTION_LABELS[a.action]||a.action}</div>
+                <a href="https://instagram.com/${a.instagram}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none">@${a.instagram}</a>
+                ${a.old_value&&a.new_value ? `<span style="font-size:11px;color:var(--text3)"> · ${a.old_value} → ${a.new_value}</span>` : ''}
+              </div>
+              <div style="font-size:10px;color:var(--text3);white-space:nowrap">${a.ts?.slice(0,16).replace('T',' ')||''}</div>
+            </div>`).join('') : `<div class="empty" style="padding:30px"><div class="empty-text">Aucune activité récente</div></div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+
+// ---- IMPORT PAGE ----
+function renderImport() {
+  document.getElementById('page-title').textContent = 'Import';
+  document.getElementById('header-actions').innerHTML = '';
+  document.getElementById('page-content').innerHTML = `
+    <div style="max-width:600px">
+      <div class="card" style="margin-bottom:20px">
+        <div class="section-title">Import CSV / Excel</div>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px">
+          Importe ta liste de prospects depuis un fichier CSV ou Excel.<br>
+          <strong>Colonnes attendues :</strong> instagram, secteur, site_web, lien_profil, score, statut, notes
+        </p>
+        <label for="import-file" class="drop-zone" id="import-drop" style="display:block;cursor:pointer">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto;opacity:0.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="drop-zone-text">Glisse ton fichier ici ou clique pour sélectionner</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">CSV supporté</div>
+        </label>
+        <input type="file" id="import-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleImport(this)">
+      </div>
+      <div class="card">
+        <div class="section-title">Saisie manuelle rapide</div>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Colle une liste d'usernames Instagram (un par ligne)</p>
+        <textarea class="input" id="bulk-input" rows="8" placeholder="@username1&#10;@username2&#10;@username3"></textarea>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" onclick="bulkImport()">Importer la liste</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function bulkImport() {
+  const raw = document.getElementById('bulk-input').value.trim();
+  if (!raw) return;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const prospects = lines.map(l => ({ instagram: l.replace('@',''), statut: 'A DM' }));
+  const res = await api('/api/prospects/import', { method: 'POST', body: JSON.stringify({ prospects }) });
+  toast(`${res.inserted} prospects importés !`);
+  document.getElementById('bulk-input').value = '';
+}
+
+async function handleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const text = await file.text();
+  const lines = text.split('\n').filter(Boolean);
+  if (!lines.length) return;
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+  const prospects = lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/"/g,''));
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
+    return { instagram: obj.instagram||obj.ig||'', secteur: obj.secteur||'', site_web: obj.site_web||'', lien_profil: obj.lien_profil||'', score: parseInt(obj.score)||0, statut: obj.statut||'A DM', notes: obj.notes||'' };
+  }).filter(p => p.instagram);
+  const res = await api('/api/prospects/import', { method: 'POST', body: JSON.stringify({ prospects }) });
+  toast(`${res.inserted} prospects importés !`);
+}
+
+// ---- PROSPECT MODAL ----
+function openProspectModal(data = null) {
+  editingId = data?.id || null;
+  document.getElementById('modal-title').textContent = data ? 'Modifier le prospect' : 'Nouveau prospect';
+  document.getElementById('f-instagram').value = data?.instagram || '';
+  document.getElementById('f-date').value = data?.date || new Date().toISOString().split('T')[0];
+  // Score
+  const score = data?.score || 0;
+  document.getElementById('f-score').value = score;
+  document.querySelectorAll('.score-pick').forEach(el => {
+    el.style.background = 'var(--bg3)'; el.style.borderColor = 'var(--border)'; el.style.color = '#7a90b0'; el.style.transform = 'scale(1)';
+  });
+  if (score > 0) setScore(score);
+  // Secteur
+  const secteur = data?.secteur || '';
+  const secteurSelect = document.getElementById('f-secteur');
+  const secteurAutre = document.getElementById('f-secteur-autre');
+  const opts = Array.from(secteurSelect.options).map(o => o.value);
+  if (opts.includes(secteur)) {
+    secteurSelect.value = secteur;
+    secteurAutre.style.display = 'none';
+  } else if (secteur) {
+    secteurSelect.value = 'Autre';
+    secteurAutre.style.display = 'block';
+    secteurAutre.value = secteur;
+  } else {
+    secteurSelect.value = '';
+    secteurAutre.style.display = 'none';
+  }
+  document.getElementById('f-lien').value = data?.lien_profil || '';
+  document.getElementById('f-site').value = data?.site_web || '';
+  document.getElementById('f-statut').value = data?.statut || 'A DM';
+  document.getElementById('f-notes').value = data?.notes || '';
+  const m1 = document.getElementById('f-m1');
+  const quali = document.getElementById('f-quali');
+  m1.className = 'toggle' + (data?.m1 ? ' on' : '');
+  quali.className = 'toggle' + (data?.quali ? ' on' : '');
+  openModal('modal-prospect');
+}
+
+async function editProspect(id) {
+  const p = await api(`/api/prospects?search=`);
+  const found = p.find(x => x.id === id);
+  if (found) openProspectModal(found);
+}
+
+async function saveProspect() {
+  const data = {
+    instagram: document.getElementById('f-instagram').value.trim().replace('@',''),
+    date: document.getElementById('f-date').value,
+    secteur: document.getElementById('f-secteur').value === 'Autre'
+      ? (document.getElementById('f-secteur-autre').value || 'Autre')
+      : document.getElementById('f-secteur').value,
+    score: parseInt(document.getElementById('f-score').value)||0,
+    lien_profil: document.getElementById('f-lien').value,
+    site_web: document.getElementById('f-site').value,
+    statut: document.getElementById('f-statut').value,
+    notes: document.getElementById('f-notes').value,
+    m1: document.getElementById('f-m1').classList.contains('on') ? 1 : 0,
+    quali: document.getElementById('f-quali').classList.contains('on') ? 1 : 0,
+  };
+  if (!data.instagram) { toast('Pseudo Instagram requis', 'error'); return; }
+  if (editingId) {
+    await api(`/api/prospects/${editingId}`, { method: 'PUT', body: JSON.stringify(data) });
+    toast('Prospect mis à jour !');
+  } else {
+    await api('/api/prospects', { method: 'POST', body: JSON.stringify(data) });
+    toast('Prospect ajouté !');
+  }
+  closeModal('modal-prospect');
+  navigate(currentPage);
+}
+
+async function deleteProspect(id) {
+  if (!confirm('Supprimer ce prospect ?')) return;
+  await api(`/api/prospects/${id}`, { method: 'DELETE' });
+  toast('Supprimé');
+  navigate(currentPage);
+}
+
+async function quickToggle(id, field, value, refresh = false) {
+  await api(`/api/prospects/${id}`, { method: 'PUT', body: JSON.stringify({ [field]: value }) });
+  if (refresh) navigate(currentPage);
+  else {
+    const el = event.target;
+    el.classList.toggle('on', !!value);
+  }
+}
+
+// ---- SESSION MODAL ----
+function openSessionModal() {
+  document.getElementById('s-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('s-newconv').value = '';
+  document.getElementById('s-rdvp').value = '';
+  document.getElementById('s-rdvb').value = '';
+  document.getElementById('s-relances').value = '';
+  document.getElementById('s-temps').value = '';
+  document.getElementById('s-retour').value = '';
+  document.getElementById('s-notes').value = '';
+  openModal('modal-session');
+}
+
+async function saveSession() {
+  const data = {
+    date: document.getElementById('s-date').value,
+    new_conv: parseInt(document.getElementById('s-newconv').value)||0,
+    rdv_proposes: parseInt(document.getElementById('s-rdvp').value)||0,
+    rdv_bookes: parseInt(document.getElementById('s-rdvb').value)||0,
+    relances: parseInt(document.getElementById('s-relances').value)||0,
+    temps_heures: parseFloat(document.getElementById('s-temps').value)||0,
+    retour: parseInt(document.getElementById('s-retour').value)||0,
+    notes: document.getElementById('s-notes').value,
+  };
+  await api('/api/sessions', { method: 'POST', body: JSON.stringify(data) });
+  toast('Session enregistrée !');
+  closeModal('modal-session');
+  navigate('sessions');
+}
+
+// ---- SCREENSHOTS ----
+function openUpload(id) {
+  screenshotProspectId = id;
+  document.getElementById('screenshot-full').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'block';
+  openModal('modal-screenshot');
+  document.getElementById('file-input').onchange = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const form = new FormData();
+    form.append('file', f);
+    const res = await fetch(`/api/prospects/upload/${screenshotProspectId}`, { method: 'POST', body: form });
+    const data = await res.json();
+    toast('Screenshot uploadé !');
+    closeModal('modal-screenshot');
+    navigate(currentPage);
+  };
+}
+
+function viewScreenshot(url, id) {
+  screenshotProspectId = id;
+  document.getElementById('screenshot-full').src = url;
+  document.getElementById('screenshot-full').style.display = 'block';
+  document.getElementById('upload-zone').style.display = 'none';
+  openModal('modal-screenshot');
+}
+
+// ---- SCORE PICKER ----
+const SCORE_ACTIVE_BG = ['','rgba(122,144,176,0.15)','rgba(249,115,22,0.15)','rgba(232,200,64,0.15)','rgba(34,197,94,0.15)','rgba(29,110,245,0.15)'];
+const SCORE_ACTIVE_BORDER = ['','#7a90b0','#f97316','#e8c840','#22c55e','#1d6ef5'];
+
+function setScore(val) {
+  document.getElementById('f-score').value = val;
+  document.querySelectorAll('.score-pick').forEach(el => {
+    const v = parseInt(el.dataset.val);
+    if (v === val) {
+      el.style.background = SCORE_ACTIVE_BG[val];
+      el.style.borderColor = SCORE_ACTIVE_BORDER[val];
+      el.style.color = SCORE_ACTIVE_BORDER[val];
+      el.style.transform = 'scale(1.08)';
+    } else {
+      el.style.background = 'var(--bg3)';
+      el.style.borderColor = 'var(--border)';
+      el.style.color = '#7a90b0';
+      el.style.transform = 'scale(1)';
+    }
+  });
+}
+
+function handleSecteur(sel) {
+  const autre = document.getElementById('f-secteur-autre');
+  autre.style.display = sel.value === 'Autre' ? 'block' : 'none';
+}
+
+// ---- INIT ----
+const initPage = window.location.hash.replace('#','') || 'pipeline';
+navigate(initPage);
+</script>
+</body>
+</html>

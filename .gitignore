@@ -1,0 +1,6 @@
+crm.db
+__pycache__/
+*.pyc
+.env
+public/uploads/
+*.sqlite
