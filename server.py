@@ -65,6 +65,15 @@ def init_db():
             ts TEXT DEFAULT (datetime('now')),
             FOREIGN KEY(prospect_id) REFERENCES prospects(id) ON DELETE CASCADE
         );
+        CREATE TABLE IF NOT EXISTS ressources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titre TEXT NOT NULL,
+            type TEXT DEFAULT 'lien',
+            url TEXT,
+            description TEXT,
+            fichier TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
         CREATE TABLE IF NOT EXISTS sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT NOT NULL,
@@ -373,6 +382,58 @@ def get_stats():
         'by_statut': [dict(r) for r in by_statut],
         'recent': [dict(r) for r in recent]
     })
+
+# --- RESSOURCES ---
+
+@app.route('/api/ressources', methods=['GET'])
+def get_ressources():
+    conn = get_db()
+    rows = conn.execute('SELECT * FROM ressources ORDER BY created_at DESC').fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/ressources', methods=['POST'])
+def create_ressource():
+    data = request.json
+    conn = get_db()
+    cur = conn.execute(
+        'INSERT INTO ressources (titre, type, url, description) VALUES (?,?,?,?)',
+        (data.get('titre',''), data.get('type','lien'), data.get('url',''), data.get('description',''))
+    )
+    rid = cur.lastrowid
+    conn.commit()
+    row = conn.execute('SELECT * FROM ressources WHERE id=?', (rid,)).fetchone()
+    conn.close()
+    return jsonify(dict(row)), 201
+
+@app.route('/api/ressources/<int:rid>', methods=['DELETE'])
+def delete_ressource(rid):
+    conn = get_db()
+    conn.execute('DELETE FROM ressources WHERE id=?', (rid,))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+@app.route('/api/ressources/upload', methods=['POST'])
+def upload_ressource():
+    f = request.files.get('file')
+    titre = request.form.get('titre', f.filename if f else 'Fichier')
+    description = request.form.get('description', '')
+    if not f:
+        return jsonify({'error': 'no file'}), 400
+    filename = f'res_{int(datetime.now().timestamp())}_{f.filename}'
+    f.save(os.path.join(UPLOAD_DIR, filename))
+    url = f'/uploads/{filename}'
+    conn = get_db()
+    cur = conn.execute(
+        'INSERT INTO ressources (titre, type, url, description) VALUES (?,?,?,?)',
+        (titre, 'fichier', url, description)
+    )
+    rid = cur.lastrowid
+    conn.commit()
+    row = conn.execute('SELECT * FROM ressources WHERE id=?', (rid,)).fetchone()
+    conn.close()
+    return jsonify(dict(row)), 201
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
