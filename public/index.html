@@ -1411,12 +1411,13 @@ async function deleteProspect(id) {
 }
 
 async function quickToggle(id, field, value, refresh = false) {
-  await api(`/api/prospects/${id}`, { method: 'PUT', body: JSON.stringify({ [field]: value }) });
-  if (refresh) navigate(currentPage);
-  else {
-    const el = event.target;
+  const el = event?.target;
+  // Mise à jour visuelle immédiate
+  if (el && el.classList.contains('toggle')) {
     el.classList.toggle('on', !!value);
   }
+  await api(`/api/prospects/${id}`, { method: 'PUT', body: JSON.stringify({ [field]: value }) });
+  if (refresh) navigate(currentPage);
 }
 
 // ---- SESSION MODAL ----
