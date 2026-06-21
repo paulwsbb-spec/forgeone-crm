@@ -226,6 +226,7 @@
     <div class="logo-sub">CRM INSTAGRAM</div>
   </div>
   <nav class="nav">
+    <div class="nav-section">PROSPECTION</div>
     <div class="nav-item active" onclick="navigate('setter')" id="nav-setter">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Prospection DM
@@ -234,6 +235,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
       Pipeline
     </div>
+    <div class="nav-section">ANALYSE</div>
     <div class="nav-item" onclick="navigate('dashboard')" id="nav-dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Stats & Dashboard
@@ -1002,8 +1004,8 @@ function renderProspectsTable(prospects) {
               <td>${badge(p.statut)}</td>
               <td style="color:var(--text2);font-size:12px">${p.secteur||'—'}</td>
               <td>${scoreDots(p.score||0)}</td>
-              <td><div class="toggle ${p.m1?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'m1',${p.m1?0:1})"></div></td>
-              <td><div class="toggle ${p.quali?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'quali',${p.quali?0:1})"></div></td>
+              <td><div class="toggle ${p.m1?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'m1',${p.m1?0:1},false,this)"></div></td>
+              <td><div class="toggle ${p.quali?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'quali',${p.quali?0:1},false,this)"></div></td>
               <td style="color:var(--text2);font-size:12px">${p.date||''}</td>
               <td style="max-width:160px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.notes||'—'}</td>
               <td onclick="event.stopPropagation()">
@@ -1410,9 +1412,8 @@ async function deleteProspect(id) {
   navigate(currentPage);
 }
 
-async function quickToggle(id, field, value, refresh = false) {
-  const el = event?.target;
-  // Mise à jour visuelle immédiate
+async function quickToggle(id, field, value, refresh = false, el = null) {
+  el = el || event?.target;
   if (el && el.classList.contains('toggle')) {
     el.classList.toggle('on', !!value);
   }
