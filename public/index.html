@@ -101,6 +101,7 @@
   .badge-video { background: rgba(249,115,22,0.2); color: #fb923c; }
   .badge-rdvp { background: rgba(34,197,94,0.15); color: #4ade80; }
   .badge-rdvb { background: rgba(34,197,94,0.3); color: var(--green); }
+  .badge-green { background: rgba(29,110,245,0.2); color: #60a5fa; }
   .badge-dead { background: rgba(239,68,68,0.15); color: #f87171; }
 
   /* TOGGLE */
@@ -343,10 +344,10 @@
             <option value="A DM">À DM</option>
             <option value="M1 Envoyé">M1 Envoyé</option>
             <option value="En cours">En cours</option>
-            <option value="Qualifié">Qualifié</option>
-            <option value="A vu la vidéo">A vu la vidéo</option>
             <option value="RDV Proposé">RDV Proposé</option>
             <option value="RDV Booké">RDV Booké</option>
+            <option value="Proposition Envoyée">Proposition Envoyée</option>
+            <option value="Closé">Closé</option>
             <option value="Dead">Dead</option>
           </select>
         </div>
@@ -497,14 +498,14 @@ function drawDonut(svgId, segments, cx, cy, R, r) {
 
 // ---- PIPELINE + DASHBOARD ----
 const KANBAN_COLS = [
-  { key: 'A DM',          label: 'À DM',        color: '#60a5fa' },
-  { key: 'M1 Envoyé',     label: 'M1 Envoyé',   color: '#818cf8' },
-  { key: 'En cours',      label: 'En cours',     color: '#a855f7' },
-  { key: 'Qualifié',      label: 'Qualifié',     color: '#eab308' },
-  { key: 'A vu la vidéo', label: 'Vidéo',        color: '#f97316' },
-  { key: 'RDV Proposé',   label: 'RDV Proposé', color: '#4ade80' },
-  { key: 'RDV Booké',     label: 'RDV Booké',   color: '#22c55e' },
-  { key: 'Dead',          label: 'Dead',         color: '#ef4444' },
+  { key: 'A DM',                 label: 'À DM',                color: '#60a5fa' },
+  { key: 'M1 Envoyé',            label: 'M1 Envoyé',           color: '#818cf8' },
+  { key: 'En cours',             label: 'En cours',            color: '#a855f7' },
+  { key: 'RDV Proposé',          label: 'RDV Proposé',         color: '#4ade80' },
+  { key: 'RDV Booké',            label: 'RDV Booké',           color: '#22c55e' },
+  { key: 'Proposition Envoyée',  label: 'Proposition Envoyée', color: '#e8c840' },
+  { key: 'Closé',                label: 'Closé',               color: '#1d6ef5' },
+  { key: 'Dead',                 label: 'Dead',                color: '#ef4444' },
 ];
 
 function kbInitials(ig) { return (ig||'?').slice(0,2).toUpperCase(); }
@@ -794,8 +795,8 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 function badge(statut) {
   const map = {
     'A DM': 'badge-dm', 'M1 Envoyé': 'badge-m1', 'En cours': 'badge-encours',
-    'Qualifié': 'badge-quali', 'A vu la vidéo': 'badge-video',
-    'RDV Proposé': 'badge-rdvp', 'RDV Booké': 'badge-rdvb', 'Dead': 'badge-dead'
+    'RDV Proposé': 'badge-rdvp', 'RDV Booké': 'badge-rdvb',
+    'Proposition Envoyée': 'badge-quali', 'Closé': 'badge-green', 'Dead': 'badge-dead'
   };
   return `<span class="badge ${map[statut]||'badge-dm'}">${statut}</span>`;
 }
@@ -877,8 +878,9 @@ async function openFiche(id) {
 
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'relance_count',${(p.relance_count||0)+1});openFiche(${p.id})">🔁 Relance +1</button>
-      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'rdv_booke',1);quickSave(${p.id},'statut','RDV Booké');openFiche(${p.id})">📅 Booker RDV</button>
-      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'statut','Qualifié');openFiche(${p.id})">⭐ Passer au closer</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'statut','RDV Booké');openFiche(${p.id})">📅 RDV Booké</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'statut','Proposition Envoyée');openFiche(${p.id})">📄 Proposition envoyée</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'statut','Closé');openFiche(${p.id})">✅ Closé</button>
       <button class="btn btn-secondary btn-sm" onclick="quickSave(${p.id},'dead',1);openFiche(${p.id})">💀 Dead</button>
       <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="editProspect(${p.id});closePanel()">✏️ Modifier</button>
     </div>`;
@@ -908,12 +910,12 @@ async function renderSetter() {
   document.getElementById('header-actions').innerHTML = '';
 
   const prospects = await api('/api/prospects');
-  const statuts = ['A DM','M1 Envoyé','En cours','Qualifié','A vu la vidéo','RDV Proposé','RDV Booké','Dead'];
+  const statuts = ['A DM','M1 Envoyé','En cours','RDV Proposé','RDV Booké','Proposition Envoyée','Closé','Dead'];
   const counts = {};
   statuts.forEach(s => counts[s] = prospects.filter(p => p.statut === s).length);
   currentStatutFilter = 'ALL';
 
-  const aRelancer = prospects.filter(p => (p.relance_count||0) > 0 && p.statut !== 'Dead' && p.statut !== 'RDV Booké');
+  const aRelancer = prospects.filter(p => (p.relance_count||0) > 0 && p.statut !== 'Dead' && p.statut !== 'Closé');
 
   document.getElementById('page-content').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
