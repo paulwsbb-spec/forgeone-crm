@@ -1004,8 +1004,8 @@ function renderProspectsTable(prospects) {
               <td>${badge(p.statut)}</td>
               <td style="color:var(--text2);font-size:12px">${p.secteur||'—'}</td>
               <td>${scoreDots(p.score||0)}</td>
-              <td><div class="toggle ${p.m1?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'m1',${p.m1?0:1},false,this)"></div></td>
-              <td><div class="toggle ${p.quali?'on':''}" onclick="event.stopPropagation();quickToggle(${p.id},'quali',${p.quali?0:1},false,this)"></div></td>
+              <td><div class="toggle ${p.m1?'on':''}" onclick="event.stopPropagation();this.classList.toggle('on');quickSave(${p.id},'m1',this.classList.contains('on')?1:0)"></div></td>
+              <td><div class="toggle ${p.quali?'on':''}" onclick="event.stopPropagation();this.classList.toggle('on');quickSave(${p.id},'quali',this.classList.contains('on')?1:0)"></div></td>
               <td style="color:var(--text2);font-size:12px">${p.date||''}</td>
               <td style="max-width:160px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.notes||'—'}</td>
               <td onclick="event.stopPropagation()">
