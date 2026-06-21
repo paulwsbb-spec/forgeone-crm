@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder='public', static_url_path='')
-CORS(app)
+CORS(app, origins="*", supports_credentials=False)
 
 DATA_DIR = os.environ.get('DATA_DIR', os.path.dirname(__file__))
 DB_PATH = os.path.join(DATA_DIR, 'crm.db')
