@@ -636,9 +636,9 @@ async function renderDashboard() {
   const p = stats.prospects || {};
   const s = stats.sessions || {};
   const total = p.total_prospects || 0;
-  const tauxRep = p.total_m1 > 0 ? Math.round(((p.total_en_cours||0)/p.total_m1)*100) : 0;
-  const tauxRdv = (p.total_en_cours||0) > 0 ? Math.round(((p.total_rdv_booke||0)/p.total_en_cours)*100) : 0;
-  const tauxQ   = total > 0 ? Math.round(((p.total_quali||0)/total)*100) : 0;
+  const tauxRep = (p.total_m1||0) > 0 ? Math.round(((p.total_reponses||0)/(p.total_m1))*100) : 0;
+  const tauxRdv = (p.total_rdv_propose||0) > 0 ? Math.round(((p.total_rdv_booke||0)/(p.total_rdv_propose))*100) : 0;
+  const tauxClos = total > 0 ? Math.round(((p.total_clos||0)/total)*100) : 0;
 
   const pipeSegs = COLS.filter(c => c.key !== 'Dead').map(c => ({
     v: prospects.filter(pr => pr.statut === c.key).length,
@@ -661,19 +661,18 @@ async function renderDashboard() {
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px">
       <div class="stat-card blue" style="margin:0"><div class="stat-num">${total}</div><div class="stat-label">Prospects</div></div>
       <div class="stat-card blue" style="margin:0"><div class="stat-num">${s.new_conv||0}</div><div class="stat-label">Convs totales</div></div>
-      <div class="stat-card" style="margin:0;position:relative;overflow:hidden"><div class="stat-num" style="color:#a855f7">${p.total_en_cours||0}</div><div class="stat-label">En cours</div><div style="position:absolute;top:0;left:0;right:0;height:2px;background:#a855f7"></div></div>
-      <div class="stat-card gold" style="margin:0"><div class="stat-num">${p.total_quali||0}</div><div class="stat-label">Qualifiés</div></div>
-      <div class="stat-card orange" style="margin:0"><div class="stat-num" style="color:#f97316">${p.total_video||0}</div><div class="stat-label">Ont vu vidéo</div></div>
+      <div class="stat-card" style="margin:0;position:relative;overflow:hidden"><div class="stat-num" style="color:#a855f7">${p.total_reponses||0}</div><div class="stat-label">Réponses</div><div style="position:absolute;top:0;left:0;right:0;height:2px;background:#a855f7"></div></div>
       <div class="stat-card green" style="margin:0"><div class="stat-num">${p.total_rdv_propose||0}</div><div class="stat-label">RDV Proposés</div></div>
       <div class="stat-card green" style="margin:0"><div class="stat-num">${p.total_rdv_booke||0}</div><div class="stat-label">RDV Bookés</div></div>
+      <div class="stat-card blue" style="margin:0"><div class="stat-num">${p.total_clos||0}</div><div class="stat-label">Closés</div></div>
       <div class="stat-card red" style="margin:0"><div class="stat-num">${p.total_dead||0}</div><div class="stat-label">Dead</div></div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:12px">
       ${[
-        {id:'d1',label:'Taux réponse',val:tauxRep,color:'#eab308',sub:'M1 → Réponse'},
-        {id:'d2',label:'Conv → RDV',val:tauxRdv,color:'#22c55e',sub:'Bookés'},
-        {id:'d3',label:'Taux qualif.',val:tauxQ,color:'#f97316',sub:'Qualifiés'}
+        {id:'d1',label:'Taux réponse',val:tauxRep,color:'#eab308',sub:'M1 → En cours'},
+        {id:'d2',label:'Taux RDV bookés',val:tauxRdv,color:'#22c55e',sub:'Proposé → Booké'},
+        {id:'d3',label:'Taux closing',val:tauxClos,color:'#1d6ef5',sub:'Closés / Total'}
       ].map(d=>`
         <div class="card" style="padding:14px;text-align:center">
           <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${d.label}</div>
@@ -744,9 +743,9 @@ async function renderDashboard() {
       t.textContent = pct+'%';
       svg.appendChild(t);
     }
-    mini('d1', tauxRep, '#eab308');
-    mini('d2', tauxRdv, '#22c55e');
-    mini('d3', tauxQ,   '#f97316');
+    mini('d1', tauxRep,  '#eab308');
+    mini('d2', tauxRdv,  '#22c55e');
+    mini('d3', tauxClos, '#1d6ef5');
     drawDonut('d4', pipeSegs.filter(x=>x.v>0), 40, 40, 34, 20);
     drawDonut('d5', sectSegs.filter(x=>x.v>0), 40, 40, 34, 20);
   }, 50);
@@ -995,7 +994,7 @@ function renderProspectsTable(prospects) {
       <table>
         <thead><tr>
           <th>Instagram</th><th>Statut</th><th>Secteur</th><th>Score</th>
-          <th>M1</th><th>Qualifié</th><th>Date</th><th>Notes</th><th>Relance</th><th></th>
+          <th>Date</th><th>Notes</th><th></th>
         </tr></thead>
         <tbody>
           ${prospects.map(p => `
@@ -1004,15 +1003,8 @@ function renderProspectsTable(prospects) {
               <td>${badge(p.statut)}</td>
               <td style="color:var(--text2);font-size:12px">${p.secteur||'—'}</td>
               <td>${scoreDots(p.score||0)}</td>
-              <td><div class="toggle ${p.m1?'on':''}" onclick="event.stopPropagation();this.classList.toggle('on');quickSave(${p.id},'m1',this.classList.contains('on')?1:0)"></div></td>
-              <td><div class="toggle ${p.quali?'on':''}" onclick="event.stopPropagation();this.classList.toggle('on');quickSave(${p.id},'quali',this.classList.contains('on')?1:0)"></div></td>
               <td style="color:var(--text2);font-size:12px">${p.date||''}</td>
-              <td style="max-width:160px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.notes||'—'}</td>
-              <td onclick="event.stopPropagation()">
-                <button onclick="addRelance(${p.id})" style="background:${(p.relance_count||0)>0?'rgba(249,115,22,0.15)':'var(--bg3)'};color:${(p.relance_count||0)>0?'#fb923c':'var(--text2)'};border:1px solid ${(p.relance_count||0)>0?'rgba(249,115,22,0.3)':'var(--border)'};border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:600">
-                  ↻${(p.relance_count||0)>0?' '+p.relance_count:''}
-                </button>
-              </td>
+              <td style="max-width:180px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.notes||'—'}</td>
               <td onclick="event.stopPropagation()">
                 <div style="display:flex;gap:6px">
                   <button class="btn btn-secondary btn-sm btn-icon" onclick="editProspect(${p.id})" title="Modifier">✏️</button>

@@ -346,11 +346,10 @@ def get_stats():
         SELECT
             COUNT(*) as total_prospects,
             SUM(m1) as total_m1,
-            SUM(CASE WHEN statut != "A DM" AND statut != "Dead" THEN 1 ELSE 0 END) as total_en_cours,
-            SUM(quali) as total_quali,
-            SUM(a_vu_video) as total_video,
+            SUM(CASE WHEN statut NOT IN ("A DM","M1 Envoyé","Dead") THEN 1 ELSE 0 END) as total_reponses,
             SUM(rdv_propose) as total_rdv_propose,
             SUM(rdv_booke) as total_rdv_booke,
+            SUM(CASE WHEN statut="Closé" THEN 1 ELSE 0 END) as total_clos,
             SUM(dead) as total_dead
         FROM prospects
     ''').fetchone()
