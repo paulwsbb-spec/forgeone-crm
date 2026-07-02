@@ -24,7 +24,7 @@ def migrate_db():
     for col, typedef in [
         ('source', 'TEXT'), ('valeur_estimee', 'TEXT'),
         ('situation', 'TEXT'), ('obstacles', 'TEXT'), ('prochain_pas', 'TEXT'),
-        ('tag', 'TEXT'), ('premier_contact', 'TEXT'),
+        ('tag', 'TEXT'), ('premier_contact', 'TEXT'), ('montant', 'REAL DEFAULT 0'),
     ]:
         if col not in cols:
             conn.execute(f'ALTER TABLE prospects ADD COLUMN {col} {typedef}')
@@ -165,7 +165,7 @@ def update_prospect(pid):
     data = request.json
     fields = ['date','instagram','secteur','site_web','lien_profil','score','m1','statut',
               'quali','dead','notes','a_vu_video','rdv_propose','rdv_booke','relance_count','screenshot',
-              'source','valeur_estimee','situation','obstacles','prochain_pas','tag','premier_contact']
+              'source','valeur_estimee','situation','obstacles','prochain_pas','tag','premier_contact','montant']
     sets = ', '.join(f'{f}=?' for f in fields if f in data)
     vals = [data[f] for f in fields if f in data]
     if not sets:
@@ -350,7 +350,8 @@ def get_stats():
             SUM(rdv_propose) as total_rdv_propose,
             SUM(rdv_booke) as total_rdv_booke,
             SUM(CASE WHEN statut="Closé" THEN 1 ELSE 0 END) as total_clos,
-            SUM(dead) as total_dead
+            SUM(dead) as total_dead,
+            SUM(CASE WHEN statut="Closé" THEN COALESCE(montant,0) ELSE 0 END) as total_ca
         FROM prospects
     ''').fetchone()
     sessions_total = conn.execute('''
